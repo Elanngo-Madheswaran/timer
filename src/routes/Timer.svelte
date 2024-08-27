@@ -1,17 +1,16 @@
 <script>
-    import { createEventDispatcher } from 'svelte'; // Import createEventDispatcher
+    import { createEventDispatcher } from 'svelte';
 
-    export let initialTime = 2; // Time in minutes passed as a prop
-    export let isActive = false; // Control whether the timer should run
-	export let cla="";
+    export let initialTime = 2;
+    export let isActive = false;
+    export let cla = "";
 
     let mins = initialTime;
     let secs = 0;
     let interval;
 
-    const dispatch = createEventDispatcher(); // Create event dispatcher
+    const dispatch = createEventDispatcher();
 
-    // Function to start the timer
     function start_timer() {
         interval = setInterval(() => {
             if (secs === 0) {
@@ -27,34 +26,30 @@
         }, 1000);
     }
 
-    // Function to stop the timer
     function stop_timer() {
         clearInterval(interval);
     }
 
-    // Watch for changes in `isActive` prop to start/stop the timer
     $: if (isActive) {
         start_timer();
     } else {
         stop_timer();
     }
 
-    // Function to handle click event to toggle timer
     function handleClick() {
-        dispatch('toggle'); // Dispatch a custom event to parent
+        dispatch('toggle');
     }
 
-    // Watch for changes in `initialTime` to reset the timer
     $: {
         mins = initialTime;
         secs = 0;
     }
+
+
 </script>
 
-<button on:click={handleClick}>
-    <button class="cursor-pointer text-5xl m-5 {cla}">
-        {mins > 0 ? `${mins} mins & ${secs} seconds` : `${secs} seconds`}
-    </button>
+<button class="{cla} w-auto text-5xl cursor-pointer m-5 border-0" on:click={handleClick} aria-pressed={isActive} aria-label="Timer" >
+    {mins > 0 ? `${mins} mins & ${secs} seconds` : `${secs} seconds`}
 </button>
 
 <style>
