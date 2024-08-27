@@ -1,89 +1,83 @@
 <script>
-    let time = 2; // Initial time in minutes
-    let mins1 = time, mins2 = time;
-    let sec1 = 0, sec2 = 0;
-    let interval1, interval2;
-    let isRunning1 = false, isRunning2 = false;
+    import Timer from './Timer.svelte'; // Import the Timer component
 
-    // Initialize mins1 and mins2 to the set time
-    $: mins1 = time;
-    $: mins2 = time;
+    let time = 2; // Initial time in minutes
+    let isRunning1 = false; // State to control Timer 1
+    let isRunning2 = false; // State to control Timer 2
+
+    // State to manage initial time for each timer
+    let timer1Time = time;
+    let timer2Time = time;
 
     function set_time(t) {
         time = t;
-        mins1 = t;
-        mins2 = t;
-        sec1 = 0;
-        sec2 = 0;
-        stop_timer("t1");
-        stop_timer("t2");
-    }
+        timer1Time = t; // Update Timer 1 time
+        timer2Time = t; // Update Timer 2 time
 
-    function stop_timer(timer) {
-        if (timer === "t1") {
-            clearInterval(interval1);
-            isRunning1 = false;
-        } else if (timer === "t2") {
-            clearInterval(interval2);
-            isRunning2 = false;
-        }
-    }
-
-    function start_timer(timer) {
-        if (timer === "t1" && !isRunning1) {
-            isRunning1 = true;
-            interval1 = setInterval(() => {
-                if (sec1 === 0) {
-                    if (mins1 === 0) {
-                        stop_timer("t1");
-                    } else {
-                        mins1--;
-                        sec1 = 59;
-                    }
-                } else {
-                    sec1--;
-                }
-            }, 1000);
-        } else if (timer === "t2" && !isRunning2) {
-            isRunning2 = true;
-            interval2 = setInterval(() => {
-                if (sec2 === 0) {
-                    if (mins2 === 0) {
-                        stop_timer("t2");
-                    } else {
-                        mins2--;
-                        sec2 = 59;
-                    }
-                } else {
-                    sec2--;
-                }
-            }, 1000);
-        }
+        // Reset timers when time is set
+        isRunning1 = false;
+        isRunning2 = false;
     }
 
     function toggle_timer(timer) {
-        if (timer === "t1") {
+        if (timer === 't1') {
             if (isRunning1) {
-                // Timer 1 is running, stop it and start Timer 2
-                stop_timer("t1");
-                start_timer("t2");
+                // Stop Timer 1 and start Timer 2
+                isRunning1 = false;
+                isRunning2 = true;
             } else {
-                // Timer 1 is not running, start it and stop Timer 2
-                stop_timer("t2");
-                start_timer("t1");
+                // Start Timer 1 and stop Timer 2
+                isRunning1 = true;
+                isRunning2 = false;
             }
-        } else if (timer === "t2") {
+        } else if (timer === 't2') {
             if (isRunning2) {
-                // Timer 2 is running, stop it and start Timer 1
-                stop_timer("t2");
-                start_timer("t1");
+                // Stop Timer 2 and start Timer 1
+                isRunning2 = false;
+                isRunning1 = true;
             } else {
-                // Timer 2 is not running, start it and stop Timer 1
-                stop_timer("t1");
-                start_timer("t2");
+                // Start Timer 2 and stop Timer 1
+                isRunning2 = true;
+                isRunning1 = false;
             }
         }
     }
+
+    function pause_clocks() {
+        // Pause both timers
+        isRunning1 = false;
+        isRunning2 = false;
+    }
+
+    // Function to handle space bar key press
+    function handleKeydown(event) {
+        if (event.code === 'Space') {
+            event.preventDefault(); // Prevent default space bar behavior
+            if (isRunning1 || isRunning2) {
+                // Toggle the running timer
+                if (isRunning1) {
+                    toggle_timer('t1');
+                } else if (isRunning2) {
+                    toggle_timer('t2');
+                }
+            } else {
+                // Start Timer 1 if both are paused
+                isRunning1 = true;
+                isRunning2 = false;
+            }
+        }
+    }
+
+    // Add keydown event listener on component mount
+    import { onMount, onDestroy } from 'svelte';
+    onMount(() => {
+        window.addEventListener('keydown', handleKeydown);
+    });
+
+    // Clean up event listener on component destroy
+    onDestroy(() => {
+        window.removeEventListener('keydown', handleKeydown);
+    });
 </script>
 
 <svelte:head>
@@ -97,10 +91,13 @@
             <button class="w-24 bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5" on:click={() => set_time(t)}>{t} min</button>
         {/each}
     </div>
-    <button on:click={() => toggle_timer('t1')} class="cursor-pointer text-5xl m-5">
-        {mins1 > 0 ? `${mins1} mins & ${sec1} seconds` : `${sec1} seconds`}
-    </button>
-    <button on:click={() => toggle_timer('t2')} class="cursor-pointer text-5xl m-5">
-        {mins2 > 0 ? `${mins2} mins & ${sec2} seconds` : `${sec2} seconds`}
-    </button>
+
+    <!-- Timer 1 with click to toggle -->
+    <Timer initialTime={timer1Time} isActive={isRunning1} on:toggle={() => toggle_timer('t1')} />
+
+    <!-- Timer 2 with click to toggle -->
+    <Timer initialTime={timer2Time} isActive={isRunning2} on:toggle={() => toggle_timer('t2')} />
+
+    <!-- Pause button -->
+    <button on:click={pause_clocks} class="w-24 bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5">Pause Both</button>
 </div>

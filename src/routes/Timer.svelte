@@ -1,73 +1,64 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher } from 'svelte'; // Import createEventDispatcher
 
-	export let time = 2;
-	export let isRunning = false;
-	export let upsideDown = false;
+    export let initialTime = 2; // Time in minutes passed as a prop
+    export let isActive = false; // Control whether the timer should run
+	export let cla="";
 
-	let sec = 0;
-	let intervalId;
-	let startTime;
-	let elapsedTime = 0;
+    let mins = initialTime;
+    let secs = 0;
+    let interval;
 
-	$: mins = time;
+    const dispatch = createEventDispatcher(); // Create event dispatcher
 
-	const dispatch = createEventDispatcher();
+    // Function to start the timer
+    function start_timer() {
+        interval = setInterval(() => {
+            if (secs === 0) {
+                if (mins === 0) {
+                    stop_timer();
+                } else {
+                    mins--;
+                    secs = 59;
+                }
+            } else {
+                secs--;
+            }
+        }, 1000);
+    }
 
-	function start_timer() {
-		if (isRunning) return;
+    // Function to stop the timer
+    function stop_timer() {
+        clearInterval(interval);
+    }
 
-		isRunning = true;
-		startTime = Date.now() - elapsedTime;
+    // Watch for changes in `isActive` prop to start/stop the timer
+    $: if (isActive) {
+        start_timer();
+    } else {
+        stop_timer();
+    }
 
-		intervalId = setInterval(update_timer, 1000);
-		update_timer();
-	}
+    // Function to handle click event to toggle timer
+    function handleClick() {
+        dispatch('toggle'); // Dispatch a custom event to parent
+    }
 
-	function update_timer() {
-		const now = Date.now();
-		elapsedTime = now - startTime;
-
-		const totalSeconds = Math.floor(elapsedTime / 1000);
-		mins = Math.floor((time * 60 - totalSeconds) / 60);
-		sec = (time * 60 - totalSeconds) % 60;
-
-		if (mins <= 0 && sec <= 0) {
-			clearInterval(intervalId);
-			isRunning = false;
-			mins = 0;
-			sec = 0;
-			dispatch('timeUp');
-		}
-	}
-
-	function stop_timer() {
-		clearInterval(intervalId);
-		isRunning = false;
-	}
-
-	function toggle_timer() {
-		if (isRunning) {
-			stop_timer();
-		} else {
-			start_timer();
-		}
-		dispatch('toggle', { isRunning });
-	}
-
-	$: if (!isRunning) {
-		stop_timer();
-	}
+    // Watch for changes in `initialTime` to reset the timer
+    $: {
+        mins = initialTime;
+        secs = 0;
+    }
 </script>
 
-<div class="flex justify-center flex-col p-5 {upsideDown ? 'upside-down' : ''}">
-	<button on:click={toggle_timer} class="cursor-pointer w-24 bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5">
-		<h1>{mins > 0 ? (sec > 0 ? `${mins} mins & ${sec} seconds` : `${mins} minutes`) : `${sec} seconds`}</h1>
-	</button>
-</div>
+<button on:click={handleClick}>
+    <button class="cursor-pointer text-5xl m-5 {cla}">
+        {mins > 0 ? `${mins} mins & ${secs} seconds` : `${secs} seconds`}
+    </button>
+</button>
 
 <style>
-	.upside-down {
+	.upside-down{
 		transform: rotate(180deg);
 	}
 </style>
