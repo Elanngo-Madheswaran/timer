@@ -84,12 +84,12 @@
 
 <div class="flex justify-center flex-col p-5">
 	
-	<Timer initialTime={timer1Time} isActive={isRunning1} on:toggle={() => toggle_timer('t1')} />
+	<Timer initialTime={timer1Time} isActive={isRunning1} cla={ups} on:toggle={() => toggle_timer('t1')} />
 	<hr class="bg-black h-2">
-	<Timer initialTime={timer2Time} isActive={isRunning2} cla={ups} on:toggle={() => toggle_timer('t2')} />
+	<Timer initialTime={timer2Time} isActive={isRunning2} on:toggle={() => toggle_timer('t2')} />
 			
 	<button on:click={pause_clocks} class="w-24 bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5">Pause Both</button>
-	<button on:click={toggle_ups} class="w-auto bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5">Upside Down Timer 2</button>
+	<button on:click={toggle_ups} class="w-auto bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5">Upside Down Timer</button>
 	<div class="flex self-center justify-center flex-wrap">
 		{#each [5, 10, 15] as t}
 			<button class="w-24 bg-slate-500 border-2 border-blue-900 text-white rounded self-center m-5" on:click={() => set_time(t)}>{t} min</button>
